@@ -2235,6 +2235,17 @@ footer{
     word-wrap:break-word;
 
 }
+.chat-text{
+    font-size:14px;
+    line-height:1.4;
+    color:inherit;
+    word-break:break-word;
+}
+
+.chat-message{
+    display:flex;
+    flex-direction:column;
+}
 
 .chat-message.you{
 
@@ -3412,7 +3423,11 @@ async function loginUser(){
             "ecopulse_user",
             currentUser
         );
-
+messagesBox.innerHTML += `
+<div class="chat-system-message">
+Logged in as ${currentUser}
+</div>
+`;
     }catch(error){
 
         console.log(error);
@@ -3522,51 +3537,36 @@ function sendChatMessage(){
 
     if(!currentUser){
 
-        alert(
-            "Please login first"
-        );
-
+        alert("Please login first");
         return;
 
     }
 
     if(!currentFriend){
 
-        alert(
-            "Add friend first"
-        );
-
+        alert("Add friend first");
         return;
 
     }
 
-    const text =
-    messageInput.value.trim();
+    const text = messageInput.value.trim();
 
     if(text === "") return;
 
-    const roomId =
-    createRoomId(
+    const roomId = createRoomId(
         currentUser,
         currentFriend
     );
 
-    db.ref("messages/" + roomId)
-    .push({
+    db.ref("messages/" + roomId).push({
 
         sender: currentUser,
-
         text: text,
-
         timestamp: Date.now()
 
     })
 
     .then(()=>{
-
-        console.log(
-            "MESSAGE SENT"
-        );
 
         messageInput.value = "";
 
@@ -3579,84 +3579,68 @@ function sendChatMessage(){
     });
 
 }
-
 /* ================= LOAD MESSAGES ================= */
 
 function loadMessages(){
 
-    if(
-        !messagesBox ||
-        !currentFriend ||
-        !currentUser
-    ) return;
+    if(!messagesBox) return;
 
-    messagesBox.innerHTML = "";
-
-    const roomId =
-    createRoomId(
+    const roomId = createRoomId(
         currentUser,
         currentFriend
     );
 
-    db.ref("messages/" + roomId)
-    .off();
+    messagesBox.innerHTML = "";
 
-    db.ref("messages/" + roomId)
-    .on("child_added",(snapshot)=>{
+    db.ref("messages/" + roomId).off();
 
-        const msg = snapshot.val();
+    db.ref("messages/" + roomId).on(
+        "child_added",
+        (snapshot)=>{
 
-        const div =
-        document.createElement("div");
+            const msg = snapshot.val();
 
-        div.classList.add(
-            "chat-message"
-        );
+            const div =
+            document.createElement("div");
 
-        if(msg.sender === currentUser){
+            div.className =
+            "chat-message " +
+            (
+                msg.sender === currentUser
+                ? "you"
+                : "friend"
+            );
 
-            div.classList.add("you");
+            const time =
+            new Date(msg.timestamp)
+            .toLocaleTimeString([],{
+                hour:"2-digit",
+                minute:"2-digit"
+            });
 
-        }else{
+            div.innerHTML = `
+                <div class="chat-user">
+                    ${msg.sender}
+                </div>
 
-            div.classList.add("friend");
+                <div class="chat-text">
+                    ${msg.text}
+                </div>
+
+                <div class="chat-time">
+                    ${time}
+                </div>
+            `;
+
+            messagesBox.appendChild(div);
+
+            messagesBox.scrollTop =
+            messagesBox.scrollHeight;
 
         }
-
-        const time =
-        new Date(msg.timestamp)
-        .toLocaleTimeString([],{
-
-            hour:"2-digit",
-            minute:"2-digit"
-
-        });
-
-        div.innerHTML = `
-
-            <div class="chat-user">
-                ${msg.sender}
-            </div>
-
-            <div class="chat-text">
-                ${msg.text}
-            </div>
-
-            <div class="chat-time">
-                ${time}
-            </div>
-
-        `;
-
-        messagesBox.appendChild(div);
-
-        messagesBox.scrollTop =
-        messagesBox.scrollHeight;
-
-    });
+    );
 
 }
-
 /* ================= ROOM ID ================= */
 
 function createRoomId(a,b){
