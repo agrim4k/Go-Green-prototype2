@@ -3392,39 +3392,41 @@ let currentUser = "";
 
 /* ================= LOGIN ================= */
 
-auth.signInWithPopup(provider)
+/* ================= LOGIN ================= */
 
-.then((result)=>{
+async function loginUser(){
 
-    currentUser = result.user.email;
+    try{
 
-    console.log(
-        "LOGIN SUCCESS:",
-        currentUser
-    );
+        const result =
+        await auth.signInWithPopup(provider);
 
-    localStorage.setItem(
-        "ecopulse_user",
-        currentUser
-    );
+        currentUser = result.user.email;
 
-})
+        console.log(
+            "LOGGED IN:",
+            currentUser
+        );
 
-.catch((error)=>{
+        localStorage.setItem(
+            "ecopulse_user",
+            currentUser
+        );
 
-    console.log(
-        "LOGIN ERROR:",
-        error.code
-    );
+    }catch(error){
 
-    console.log(error.message);
+        console.log(error);
 
-    alert(
-        "Google Login Failed:\n" +
-        error.code
-    );
+        alert(
+            "Google login failed.\n\n" +
+            error.message
+        );
 
-});
+    }
+
+}
+
+loginUser();
 
 /* ================= OPEN CHAT ================= */
 
