@@ -3537,7 +3537,7 @@ function sendChatMessage(){
 
     if(!currentUser){
 
-        alert("Please login first");
+        alert("Login first");
         return;
 
     }
@@ -3549,16 +3549,19 @@ function sendChatMessage(){
 
     }
 
-    const text = messageInput.value.trim();
+    const text =
+    messageInput.value.trim();
 
     if(text === "") return;
 
-    const roomId = createRoomId(
+    const roomId =
+    createRoomId(
         currentUser,
         currentFriend
     );
 
-    db.ref("messages/" + roomId).push({
+    db.ref("messages/" + roomId)
+    .push({
 
         sender: currentUser,
         text: text,
@@ -3569,7 +3572,6 @@ function sendChatMessage(){
     .then(()=>{
 
         messageInput.value = "";
-        loadMessages();
 
     })
 
@@ -3581,65 +3583,68 @@ function sendChatMessage(){
 
 }
 /* ================= LOAD MESSAGES ================= */
-
 function loadMessages(){
 
-    if(!messagesBox) return;
+    if(
+        !messagesBox ||
+        !currentFriend ||
+        !currentUser
+    ) return;
 
-    const roomId = createRoomId(
+    const roomId =
+    createRoomId(
         currentUser,
         currentFriend
     );
 
-    if(messagesBox.innerHTML.includes("chat-message")) return;
-
     db.ref("messages/" + roomId).off();
 
-    db.ref("messages/" + roomId).on(
-        "child_added",
-        (snapshot)=>{
+    messagesBox.innerHTML = `
+        <div class="chat-system-message">
+            Connected with ${currentFriend}
+        </div>
+    `;
 
-            const msg = snapshot.val();
+    db.ref("messages/" + roomId)
+    .on("child_added",(snapshot)=>{
 
-            const div =
-            document.createElement("div");
+        const msg = snapshot.val();
 
-            div.className =
-            "chat-message " +
-            (
-                msg.sender === currentUser
-                ? "you"
-                : "friend"
-            );
+        const div =
+        document.createElement("div");
 
-            const time =
-            new Date(msg.timestamp)
-            .toLocaleTimeString([],{
-                hour:"2-digit",
-                minute:"2-digit"
-            });
+        div.className =
+            msg.sender === currentUser
+            ? "chat-message you"
+            : "chat-message friend";
 
-            div.innerHTML = `
-                <div class="chat-user">
-                    ${msg.sender}
-                </div>
+        const time =
+        new Date(msg.timestamp)
+        .toLocaleTimeString([],{
+            hour:"2-digit",
+            minute:"2-digit"
+        });
 
-                <div class="chat-text">
-                    ${msg.text}
-                </div>
+        div.innerHTML = `
+            <div class="chat-user">
+                ${msg.sender}
+            </div>
 
-                <div class="chat-time">
-                    ${time}
-                </div>
-            `;
+            <div class="chat-text">
+                ${msg.text}
+            </div>
 
-            messagesBox.appendChild(div);
+            <div class="chat-time">
+                ${time}
+            </div>
+        `;
 
-            messagesBox.scrollTop =
-            messagesBox.scrollHeight;
+        messagesBox.appendChild(div);
 
-        }
-    );
+        messagesBox.scrollTop =
+        messagesBox.scrollHeight;
+
+    });
 
 }
 /* ================= ROOM ID ================= */
