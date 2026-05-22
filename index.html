@@ -3569,6 +3569,7 @@ function sendChatMessage(){
     .then(()=>{
 
         messageInput.value = "";
+        loadMessages();
 
     })
 
@@ -3590,7 +3591,7 @@ function loadMessages(){
         currentFriend
     );
 
-    messagesBox.innerHTML = "";
+    if(messagesBox.innerHTML.includes("chat-message")) return;
 
     db.ref("messages/" + roomId).off();
 
